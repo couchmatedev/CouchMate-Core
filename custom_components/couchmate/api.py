@@ -270,10 +270,16 @@ class CouchMateClientEntitiesView(HomeAssistantView):
             return web.json_response({"error": "unauthorized"}, status=401)
         hass = request.app["hass"]
         selected = list(hass.data.get(DOMAIN, {}).get("entities", []))
+        room_temperature_ids = dict(hass.data.get(DOMAIN, {}).get("room_temperatures", {}))
+
+        # A preferred room-temperature sensor is configuration metadata, but it
+        # must also be part of the client payload even when the user did not
+        # select that entity separately in the device/function view.
+        effective_selected = list(dict.fromkeys([*selected, *room_temperature_ids.values()]))
         entities: list[dict[str, Any]] = []
         skipped: list[str] = []
 
-        for entity_id in selected:
+        for entity_id in effective_selected:
             try:
                 payload = _entity_payload(hass, entity_id)
                 if payload is None:
@@ -295,13 +301,32 @@ class CouchMateClientEntitiesView(HomeAssistantView):
             if area_id and area_name:
                 areas_by_id[area_id] = {"id": area_id, "name": area_name}
 
+        room_temperatures: dict[str, dict[str, Any]] = {}
+        entities_by_id = {item["entity_id"]: item for item in entities}
+        for area_id, entity_id in room_temperature_ids.items():
+            payload = entities_by_id.get(entity_id)
+            if payload is None:
+                continue
+            room_temperatures[area_id] = {
+                "area_id": area_id,
+                "area_name": payload.get("area_name"),
+                "entity_id": entity_id,
+                "state": payload.get("state"),
+                "unit_of_measurement": payload.get("unit_of_measurement")
+                    or payload.get("attributes", {}).get("unit_of_measurement"),
+                "name": payload.get("name"),
+            }
+
         return web.json_response(
             {
                 "client_id": client_id,
                 "entities": entities,
                 "areas": sorted(areas_by_id.values(), key=lambda item: item["name"].casefold()),
+                "room_temperature_entity_ids": room_temperature_ids,
+                "room_temperatures": room_temperatures,
                 "count": len(entities),
                 "selected_count": len(selected),
+                "effective_selected_count": len(effective_selected),
                 "skipped": skipped,
             },
             headers={"Cache-Control": "no-store"},
