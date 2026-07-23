@@ -11,6 +11,7 @@ CONF_ENTITIES = "entities"
 CONF_EXCLUDED_ENTITIES = "excluded_entities"
 CONF_AREAS = "areas"
 CONF_DEVICES = "devices"
+CONF_ROOM_TEMPERATURES = "room_temperatures"
 CONF_FILTER_MODE = "filter_mode"
 
 FILTER_MODE_INCLUDE = "include"

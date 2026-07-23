@@ -21,6 +21,7 @@ from .const import (
     CONF_DEVICES,
     CONF_ENTITIES,
     CONF_EXCLUDED_ENTITIES,
+    CONF_ROOM_TEMPERATURES,
     DOMAIN,
     STORAGE_KEY,
     STORAGE_VERSION,
@@ -112,12 +113,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             stored_devices = list(stored.get(CONF_DEVICES, []))
             stored_entities = list(stored.get(CONF_ENTITIES, []))
             stored_excluded_entities = list(stored.get(CONF_EXCLUDED_ENTITIES, []))
+            stored_room_temperatures = dict(stored.get(CONF_ROOM_TEMPERATURES, {}))
         except Exception:
             _LOGGER.exception("Error loading stored selections, using config data")
             stored_areas = list(entry.data.get(CONF_AREAS, []))
             stored_devices = list(entry.data.get(CONF_DEVICES, []))
             stored_entities = list(entry.data.get(CONF_ENTITIES, []))
             stored_excluded_entities = list(entry.data.get(CONF_EXCLUDED_ENTITIES, []))
+            stored_room_temperatures = dict(entry.data.get(CONF_ROOM_TEMPERATURES, {}))
 
         # Resolve area + device picks down to a flat entity-id set,
         # unioned with any explicitly-selected entities. The runtime
@@ -136,6 +139,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN]["devices"] = stored_devices
         hass.data[DOMAIN]["explicit_entities"] = stored_entities
         hass.data[DOMAIN]["excluded_entities"] = stored_excluded_entities
+        hass.data[DOMAIN]["room_temperatures"] = stored_room_temperatures
         hass.data[DOMAIN]["entry"] = entry
         
         await hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
