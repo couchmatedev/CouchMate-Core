@@ -107,6 +107,7 @@ class CouchMateEntitiesView(HomeAssistantView):
             except Exception as err:  # noqa: BLE001
                 _LOGGER.exception("Unable to serialize CouchMate entity %s", entity_id)
                 skipped.append(f"{entity_id}: {err}")
+
         return web.json_response(
             {"entities": detailed_entities, "count": len(detailed_entities), "skipped": skipped},
             headers={"Cache-Control": "no-store"},
@@ -271,11 +272,12 @@ class CouchMateClientEntitiesView(HomeAssistantView):
         hass = request.app["hass"]
         selected = list(hass.data.get(DOMAIN, {}).get("entities", []))
         room_temperature_ids = dict(hass.data.get(DOMAIN, {}).get("room_temperatures", {}))
+        room_humidity_ids = dict(hass.data.get(DOMAIN, {}).get("room_humidities", {}))
 
         # A preferred room-temperature sensor is configuration metadata, but it
         # must also be part of the client payload even when the user did not
         # select that entity separately in the device/function view.
-        effective_selected = list(dict.fromkeys([*selected, *room_temperature_ids.values()]))
+        effective_selected = list(dict.fromkeys([*selected, *room_temperature_ids.values(), *room_humidity_ids.values()]))
         entities: list[dict[str, Any]] = []
         skipped: list[str] = []
 
@@ -317,6 +319,21 @@ class CouchMateClientEntitiesView(HomeAssistantView):
                 "name": payload.get("name"),
             }
 
+        room_humidities: dict[str, dict[str, Any]] = {}
+        for area_id, entity_id in room_humidity_ids.items():
+            payload = entities_by_id.get(entity_id)
+            if payload is None:
+                continue
+            room_humidities[area_id] = {
+                "area_id": area_id,
+                "area_name": payload.get("area_name"),
+                "entity_id": entity_id,
+                "state": payload.get("state"),
+                "unit_of_measurement": payload.get("unit_of_measurement")
+                    or payload.get("attributes", {}).get("unit_of_measurement"),
+                "name": payload.get("name"),
+            }
+
         return web.json_response(
             {
                 "client_id": client_id,
@@ -324,6 +341,8 @@ class CouchMateClientEntitiesView(HomeAssistantView):
                 "areas": sorted(areas_by_id.values(), key=lambda item: item["name"].casefold()),
                 "room_temperature_entity_ids": room_temperature_ids,
                 "room_temperatures": room_temperatures,
+                "room_humidity_entity_ids": room_humidity_ids,
+                "room_humidities": room_humidities,
                 "count": len(entities),
                 "selected_count": len(selected),
                 "effective_selected_count": len(effective_selected),
