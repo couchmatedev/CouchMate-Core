@@ -1,12 +1,17 @@
 {
   "domain": "couchmate",
   "name": "CouchMate Core",
-  "codeowners": ["@couchmatedev"],
+  "codeowners": [
+    "@couchmatedev"
+  ],
   "config_flow": true,
-  "dependencies": ["http", "websocket_api"],
+  "dependencies": [
+    "http",
+    "websocket_api"
+  ],
   "documentation": "https://github.com/couchmatedev/CouchMate-Core",
   "integration_type": "service",
   "iot_class": "local_push",
   "requirements": [],
-  "version": "1.2.0-alpha.2"
+  "version": "1.2.0-alpha.3"
 }

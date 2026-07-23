@@ -1,7 +1,9 @@
-# CouchMate Core 1.2.0-alpha.2
+# CouchMate Core 1.2.0-alpha.3
 
-Grafischer Raum-, Geräte- und Entitäten-Konfigurator.
+Grafischer CouchMate-Konfigurator.
 
-Aufruf nach dem Neustart: `/api/couchmate/configurator`
+Nach Installation und vollständigem Home-Assistant-Neustart öffnen:
 
-Diese Version behebt den 401-Fehler beim direkten Öffnen des Konfigurators. Datenabruf und Speichern bleiben über das Home-Assistant-Zugriffstoken geschützt.
+`http://DEINE-HA-IP:8123/couchmate/configurator`
+
+Wichtig: Der alte Pfad `/api/couchmate/configurator` ist nicht mehr gültig.

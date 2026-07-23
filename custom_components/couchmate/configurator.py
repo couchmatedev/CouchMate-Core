@@ -14,8 +14,8 @@ def _name(entry, state, fallback):
 
 
 class CouchMateConfiguratorView(HomeAssistantView):
-    url = "/api/couchmate/configurator"
-    name = "api:couchmate:configurator"
+    url = "/couchmate/configurator"
+    name = "couchmate:configurator"
     # The shell contains no Home Assistant data. It must be reachable by a
     # normal browser navigation, which does not attach an Authorization header.
     # The data and save endpoints below remain authenticated.
