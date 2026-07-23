@@ -1,0 +1,34 @@
+add_entity:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity: {}
+remove_entity:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity: {}
+set_entities:
+  fields:
+    entities:
+      required: true
+      selector:
+        entity:
+          multiple: true
+approve_pairing:
+  fields:
+    code:
+      required: true
+      example: CM-A7KD-P4XM
+      selector:
+        text: {}
+reject_pairing:
+  fields:
+    code:
+      required: true
+      example: CM-A7KD-P4XM
+      selector:
+        text: {}
+uninstall: {}
