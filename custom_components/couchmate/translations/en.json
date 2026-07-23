@@ -1,120 +1,20 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "1/5 – Select areas",
-        "description": "Select the areas CouchMate may use.",
-        "data": {
-          "areas": "Areas"
-        }
-      },
-      "devices": {
-        "title": "2/5 – Select devices",
-        "description": "Select additional complete devices.",
-        "data": {
-          "devices": "Devices"
-        }
-      },
-      "entities": {
-        "title": "3/5 – Select individual entities",
-        "description": "Select additional individual entities.",
-        "data": {
-          "entities": "Additional entities"
-        }
-      },
-      "exclusions": {
-        "title": "4/5 – Exclude entities",
-        "description": "These entities will not be exposed even when selected through an area or device.",
-        "data": {
-          "excluded_entities": "Excluded entities"
-        }
-      },
-      "summary": {
-        "title": "5/5 – Review selection",
-        "description": "Areas ({area_count}): {areas}\n\nDevices ({device_count}): {devices}\n\nIndividual entities ({entity_count}): {entities}\n\nExclusions ({excluded_count}): {excluded}\n\nA total of {resolved_count} entities will be exposed.",
-        "data": {
-          "confirm": "Save selection"
-        }
-      }
-    },
-    "abort": {
-      "already_configured": "CouchMate Core is already configured."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Manage CouchMate",
-        "menu_options": {
-          "selection": "Devices & entities",
-          "approve_pairing": "Approve Apple TV",
-          "reject_pairing": "Reject pairing",
-          "paired_clients": "Paired devices"
-        }
-      },
-      "selection": {
-        "title": "1/5 – Change areas",
-        "description": "{resolved_count} entities are currently exposed.",
-        "data": {
-          "areas": "Areas"
-        }
-      },
-      "devices": {
-        "title": "2/5 – Change devices",
-        "description": "Previously selected devices are preselected.",
-        "data": {
-          "devices": "Devices"
-        }
-      },
-      "entities": {
-        "title": "3/5 – Change individual entities",
-        "description": "Previously selected individual entities are preselected.",
-        "data": {
-          "entities": "Additional entities"
-        }
-      },
-      "exclusions": {
-        "title": "4/5 – Change exclusions",
-        "description": "These entities will not be exposed.",
-        "data": {
-          "excluded_entities": "Excluded entities"
-        }
-      },
-      "summary": {
-        "title": "5/5 – Review changes",
-        "description": "Areas ({area_count}): {areas}\n\nDevices ({device_count}): {devices}\n\nIndividual entities ({entity_count}): {entities}\n\nExclusions ({excluded_count}): {excluded}\n\nA total of {resolved_count} entities will be exposed.",
-        "data": {
-          "confirm": "Save changes"
-        }
-      },
-      "approve_pairing": {
-        "title": "Approve Apple TV",
-        "description": "Select the pairing request you want to approve.",
-        "data": {
-          "pairing_code": "Pairing request"
-        }
-      },
-      "reject_pairing": {
-        "title": "Reject pairing",
-        "description": "Select the pairing request you want to reject.",
-        "data": {
-          "pairing_code": "Pairing request"
-        }
-      },
-      "paired_clients": {
-        "title": "Paired devices",
-        "description": "Select devices whose CouchMate access you want to revoke. Leave empty to keep all devices.",
-        "data": {
-          "clients": "Revoke access"
-        }
-      }
-    },
-    "error": {
-      "pairing_not_found": "The pairing request was not found or has expired."
-    },
-    "abort": {
-      "no_pending_pairings": "There are currently no pending pairing requests.",
-      "no_paired_clients": "No CouchMate devices have been paired yet."
-    }
-  }
+  "config": {"step": {
+    "user": {"title":"1/5 – Select areas","data":{"areas":"Areas"}},
+    "devices": {"title":"2/5 – Select devices","data":{"devices":"Devices"}},
+    "entities": {"title":"3/5 – Select entities","data":{"entities":"Entities"}},
+    "exclusions": {"title":"4/5 – Exclude entities","data":{"excluded_entities":"Excluded entities"}},
+    "summary": {"title":"5/5 – Review","description":"{resolved_count} entities will be exposed.","data":{"confirm":"Save"}}
+  },"abort":{"already_configured":"CouchMate Core is already configured."}},
+  "options": {"step": {
+    "init":{"title":"Manage CouchMate","menu_options":{"selection":"Devices & entities","approve_pairing":"Approve Apple TV","reject_pairing":"Reject pairing","paired_clients":"Paired devices"}},
+    "selection":{"title":"1/5 – Change areas","description":"{resolved_count} entities are exposed.","data":{"areas":"Areas"}},
+    "devices":{"title":"2/5 – Change devices","data":{"devices":"Devices"}},
+    "entities":{"title":"3/5 – Change entities","data":{"entities":"Entities"}},
+    "exclusions":{"title":"4/5 – Change exclusions","data":{"excluded_entities":"Excluded entities"}},
+    "summary":{"title":"5/5 – Review","description":"{resolved_count} entities will be exposed.","data":{"confirm":"Save"}},
+    "approve_pairing":{"title":"Approve Apple TV","data":{"pairing_code":"Pairing request"}},
+    "reject_pairing":{"title":"Reject pairing","data":{"pairing_code":"Pairing request"}},
+    "paired_clients":{"title":"Paired devices","data":{"clients":"Revoke access"}}
+  },"error":{"pairing_not_found":"Pairing request not found."},"abort":{"no_pending_pairings":"No pending pairings.","no_paired_clients":"No paired devices."}}
 }
