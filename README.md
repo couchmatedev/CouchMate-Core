@@ -1,9 +1,7 @@
-# CouchMate Core – Graphic Configurator Test
+# CouchMate Core 1.2.0-alpha.2
 
-Test build based on CouchMate Core 1.1.x.
+Grafischer Raum-, Geräte- und Entitäten-Konfigurator.
 
-After installation and restart, open:
+Aufruf nach dem Neustart: `/api/couchmate/configurator`
 
-`https://YOUR-HOME-ASSISTANT/api/couchmate/configurator`
-
-The page requires an authenticated Home Assistant session.
+Diese Version behebt den 401-Fehler beim direkten Öffnen des Konfigurators. Datenabruf und Speichern bleiben über das Home-Assistant-Zugriffstoken geschützt.
