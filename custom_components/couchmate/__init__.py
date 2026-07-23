@@ -85,6 +85,7 @@ def _resolve_filter(
     return resolved
 from .websocket_api import async_setup_websocket_api
 from .api import async_setup_api
+from .configurator import async_setup_configurator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -153,6 +154,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.exception("Error setting up REST API")
             return False
         
+        # Set up graphical configurator
+        try:
+            await async_setup_configurator(hass)
+        except Exception:
+            _LOGGER.exception("Error setting up graphical configurator")
+            return False
+
         # Register services
         try:
             await _async_setup_services(hass)
