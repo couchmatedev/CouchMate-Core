@@ -110,7 +110,7 @@ class CouchMateEntitiesView(HomeAssistantView):
 
         return web.json_response(
             {"entities": detailed_entities, "count": len(detailed_entities), "skipped": skipped},
-            headers={"Cache-Control": "no-store"},
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"},
         )
 
     async def post(self, request: web.Request) -> web.Response:
@@ -134,7 +134,7 @@ class CouchMateInfoView(HomeAssistantView):
         hass = request.app["hass"]
         return web.json_response({
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.12",
+            "version": "1.2.0-alpha.13",
             "domain": DOMAIN,
             "filtered_entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
             "pairing": True,
@@ -254,7 +254,7 @@ class CouchMateClientInfoView(HomeAssistantView):
         return web.json_response({
             "client_id": client_id,
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.12",
+            "version": "1.2.0-alpha.13",
             "status": "active",
             "entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
         })
@@ -279,7 +279,21 @@ class CouchMateClientEntitiesView(HomeAssistantView):
         # A preferred room-temperature sensor is configuration metadata, but it
         # must also be part of the client payload even when the user did not
         # select that entity separately in the device/function view.
-        effective_selected = list(dict.fromkeys([*selected, *room_temperature_ids.values(), *room_humidity_ids.values()]))
+        # Whole-device selection must expose every current entity belonging to
+        # that device. Otherwise media_player entities can disappear even though
+        # the Sonos/TV device itself was selected in the configurator.
+        entity_registry = er.async_get(hass)
+        full_device_entity_ids = [
+            entry.entity_id
+            for entry in entity_registry.entities.values()
+            if entry.device_id in full_device_ids and hass.states.get(entry.entity_id) is not None
+        ]
+        effective_selected = list(dict.fromkeys([
+            *selected,
+            *full_device_entity_ids,
+            *room_temperature_ids.values(),
+            *room_humidity_ids.values(),
+        ]))
         entities: list[dict[str, Any]] = []
         skipped: list[str] = []
 
@@ -391,7 +405,7 @@ class CouchMateClientEntitiesView(HomeAssistantView):
                 "effective_selected_count": len(effective_selected),
                 "skipped": skipped,
             },
-            headers={"Cache-Control": "no-store"},
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"},
         )
 
 
