@@ -216,7 +216,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 config={"url": PANEL_CONFIGURATOR_URL},
                 require_admin=True,
                 update=True,
-                config_panel_domain=DOMAIN,
                 show_in_sidebar=True,
             )
             hass.data[DOMAIN]["panel_registered"] = True
