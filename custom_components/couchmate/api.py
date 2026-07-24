@@ -134,7 +134,7 @@ class CouchMateInfoView(HomeAssistantView):
         hass = request.app["hass"]
         return web.json_response({
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.13",
+            "version": "1.2.0-alpha.14",
             "domain": DOMAIN,
             "filtered_entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
             "pairing": True,
@@ -254,7 +254,7 @@ class CouchMateClientInfoView(HomeAssistantView):
         return web.json_response({
             "client_id": client_id,
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.13",
+            "version": "1.2.0-alpha.14",
             "status": "active",
             "entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
         })
@@ -275,6 +275,7 @@ class CouchMateClientEntitiesView(HomeAssistantView):
         full_device_ids = list(hass.data.get(DOMAIN, {}).get("devices", []))
         room_temperature_ids = dict(hass.data.get(DOMAIN, {}).get("room_temperatures", {}))
         room_humidity_ids = dict(hass.data.get(DOMAIN, {}).get("room_humidities", {}))
+        selection_model = dict(hass.data.get(DOMAIN, {}).get("selection_model", {}))
 
         # A preferred room-temperature sensor is configuration metadata, but it
         # must also be part of the client payload even when the user did not
@@ -283,14 +284,39 @@ class CouchMateClientEntitiesView(HomeAssistantView):
         # that device. Otherwise media_player entities can disappear even though
         # the Sonos/TV device itself was selected in the configurator.
         entity_registry = er.async_get(hass)
+        device_registry = dr.async_get(hass)
         full_device_entity_ids = [
             entry.entity_id
             for entry in entity_registry.entities.values()
             if entry.device_id in full_device_ids and hass.states.get(entry.entity_id) is not None
         ]
+
+        # Media players are room-level capabilities in CouchMate. A Sonos
+        # speaker can expose its playable media_player entity separately from
+        # the functions that happened to be selected in the configurator. To
+        # keep the room media card stable, always expose available
+        # media_player entities that belong to a configured CouchMate room.
+        configured_area_ids = {
+            str(area_id)
+            for area_id in dict(selection_model.get("areas", {})).keys()
+            if area_id
+        }
+        configured_media_entity_ids: list[str] = []
+        for entry in entity_registry.entities.values():
+            if entry.disabled or not entry.entity_id.startswith("media_player."):
+                continue
+            state = hass.states.get(entry.entity_id)
+            if state is None:
+                continue
+            device = device_registry.async_get(entry.device_id) if entry.device_id else None
+            entity_area_id = entry.area_id or (device.area_id if device else None)
+            if entity_area_id and entity_area_id in configured_area_ids:
+                configured_media_entity_ids.append(entry.entity_id)
+
         effective_selected = list(dict.fromkeys([
             *selected,
             *full_device_entity_ids,
+            *configured_media_entity_ids,
             *room_temperature_ids.values(),
             *room_humidity_ids.values(),
         ]))
