@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from homeassistant.components import persistent_notification, websocket_api
+from homeassistant.components.frontend import async_register_built_in_panel, async_remove_panel
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_STATE_CHANGED, Platform
 from homeassistant.core import HomeAssistant, callback
@@ -92,6 +93,10 @@ from .api import async_setup_api
 from .configurator import async_setup_configurator
 
 _LOGGER = logging.getLogger(__name__)
+
+PANEL_URL_PATH = "couchmate"
+PANEL_CONFIGURATOR_URL = "/couchmate/configurator"
+
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
@@ -197,6 +202,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.exception("Error setting up graphical configurator")
             return False
 
+        # Expose the graphical configurator as a native Home Assistant
+        # sidebar entry. The iframe uses a relative URL, so it works with
+        # local IPs, host names, reverse proxies and Home Assistant Cloud.
+        try:
+            async_register_built_in_panel(
+                hass,
+                component_name="iframe",
+                sidebar_title="CouchMate",
+                sidebar_icon="mdi:sofa-single",
+                sidebar_default_visible=True,
+                frontend_url_path=PANEL_URL_PATH,
+                config={"url": PANEL_CONFIGURATOR_URL},
+                require_admin=True,
+                update=True,
+                config_panel_domain=DOMAIN,
+                show_in_sidebar=True,
+            )
+            hass.data[DOMAIN]["panel_registered"] = True
+        except Exception:
+            _LOGGER.exception("Error registering CouchMate sidebar panel")
+            return False
+
         # Register services
         try:
             await _async_setup_services(hass)
@@ -218,6 +245,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     try:
+        if hass.data.get(DOMAIN, {}).get("panel_registered"):
+            async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
+
         # Remove services (with error handling)
         try:
             hass.services.async_remove(DOMAIN, "add_entity")
