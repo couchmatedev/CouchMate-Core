@@ -134,7 +134,7 @@ class CouchMateInfoView(HomeAssistantView):
         hass = request.app["hass"]
         return web.json_response({
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.9",
+            "version": "1.2.0-alpha.10",
             "domain": DOMAIN,
             "filtered_entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
             "pairing": True,
@@ -254,7 +254,7 @@ class CouchMateClientInfoView(HomeAssistantView):
         return web.json_response({
             "client_id": client_id,
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.9",
+            "version": "1.2.0-alpha.10",
             "status": "active",
             "entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
         })
@@ -271,6 +271,8 @@ class CouchMateClientEntitiesView(HomeAssistantView):
             return web.json_response({"error": "unauthorized"}, status=401)
         hass = request.app["hass"]
         selected = list(hass.data.get(DOMAIN, {}).get("entities", []))
+        explicit_entity_ids = list(hass.data.get(DOMAIN, {}).get("explicit_entities", []))
+        full_device_ids = list(hass.data.get(DOMAIN, {}).get("devices", []))
         room_temperature_ids = dict(hass.data.get(DOMAIN, {}).get("room_temperatures", {}))
         room_humidity_ids = dict(hass.data.get(DOMAIN, {}).get("room_humidities", {}))
 
@@ -343,6 +345,13 @@ class CouchMateClientEntitiesView(HomeAssistantView):
                 "room_temperatures": room_temperatures,
                 "room_humidity_entity_ids": room_humidity_ids,
                 "room_humidities": room_humidities,
+                # Selection model v2 metadata. Clients must use this as the
+                # authoritative whitelist: exact entity ids are rendered exactly,
+                # while sibling entities are allowed only for devices explicitly
+                # selected in mode "all".
+                "selection_model_version": 2,
+                "explicit_entity_ids": explicit_entity_ids,
+                "full_device_ids": full_device_ids,
                 "count": len(entities),
                 "selected_count": len(selected),
                 "effective_selected_count": len(effective_selected),
