@@ -134,7 +134,7 @@ class CouchMateInfoView(HomeAssistantView):
         hass = request.app["hass"]
         return web.json_response({
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.10",
+            "version": "1.2.0-alpha.12",
             "domain": DOMAIN,
             "filtered_entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
             "pairing": True,
@@ -254,7 +254,7 @@ class CouchMateClientInfoView(HomeAssistantView):
         return web.json_response({
             "client_id": client_id,
             "integration": "CouchMate Core",
-            "version": "1.2.0-alpha.10",
+            "version": "1.2.0-alpha.12",
             "status": "active",
             "entities_count": len(hass.data.get(DOMAIN, {}).get("entities", [])),
         })
@@ -336,9 +336,43 @@ class CouchMateClientEntitiesView(HomeAssistantView):
                 "name": payload.get("name"),
             }
 
+        weather: dict[str, Any] | None = None
+        weather_entity_ids = [entity_id for entity_id in selected if entity_id.startswith("weather.")]
+        if not weather_entity_ids:
+            weather_entity_ids = [state.entity_id for state in hass.states.async_all("weather") if state.state not in ("unknown", "unavailable")]
+
+        if weather_entity_ids:
+            weather_entity_id = weather_entity_ids[0]
+            weather_state = hass.states.get(weather_entity_id)
+            if weather_state is not None:
+                weather = {
+                    "entity_id": weather_entity_id,
+                    "state": weather_state.state,
+                    "attributes": dict(weather_state.attributes),
+                    "forecast": [],
+                }
+                try:
+                    response = await hass.services.async_call(
+                        "weather",
+                        "get_forecasts",
+                        {"type": "daily"},
+                        blocking=True,
+                        target={"entity_id": weather_entity_id},
+                        return_response=True,
+                    )
+                    if isinstance(response, dict):
+                        entity_response = response.get(weather_entity_id, response)
+                        if isinstance(entity_response, dict):
+                            forecast = entity_response.get("forecast", [])
+                            if isinstance(forecast, list):
+                                weather["forecast"] = forecast[:3]
+                except Exception as err:  # noqa: BLE001
+                    _LOGGER.debug("Unable to load daily weather forecast for %s: %s", weather_entity_id, err)
+
         return web.json_response(
             {
                 "client_id": client_id,
+                "weather": weather,
                 "entities": entities,
                 "areas": sorted(areas_by_id.values(), key=lambda item: item["name"].casefold()),
                 "room_temperature_entity_ids": room_temperature_ids,
