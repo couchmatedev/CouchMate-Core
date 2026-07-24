@@ -23,6 +23,8 @@ from .const import (
     CONF_EXCLUDED_ENTITIES,
     CONF_ROOM_TEMPERATURES,
     CONF_ROOM_HUMIDITIES,
+    CONF_SELECTION_MODEL,
+    SELECTION_MODEL_VERSION,
     DOMAIN,
     STORAGE_KEY,
     STORAGE_VERSION,
@@ -116,6 +118,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             stored_excluded_entities = list(stored.get(CONF_EXCLUDED_ENTITIES, []))
             stored_room_temperatures = dict(stored.get(CONF_ROOM_TEMPERATURES, {}))
             stored_room_humidities = dict(stored.get(CONF_ROOM_HUMIDITIES, {}))
+            stored_selection_model = dict(stored.get(CONF_SELECTION_MODEL, {}))
+            if stored_selection_model.get("version") == SELECTION_MODEL_VERSION:
+                model_areas = dict(stored_selection_model.get("areas", {}))
+                stored_areas = []
+                stored_devices = []
+                stored_entities = []
+                stored_room_temperatures = {}
+                stored_room_humidities = {}
+                for area_id, area_cfg in model_areas.items():
+                    if not isinstance(area_cfg, dict):
+                        continue
+                    if area_cfg.get("temperature"):
+                        stored_room_temperatures[str(area_id)] = str(area_cfg["temperature"])
+                    if area_cfg.get("humidity"):
+                        stored_room_humidities[str(area_id)] = str(area_cfg["humidity"])
+                    for device_id, device_cfg in dict(area_cfg.get("devices", {})).items():
+                        if not isinstance(device_cfg, dict):
+                            continue
+                        if device_cfg.get("mode") == "all":
+                            stored_devices.append(str(device_id))
+                        else:
+                            stored_entities.extend(str(entity_id) for entity_id in device_cfg.get("entities", []) if entity_id)
+                stored_devices = list(dict.fromkeys(stored_devices))
+                stored_entities = list(dict.fromkeys(stored_entities))
         except Exception:
             _LOGGER.exception("Error loading stored selections, using config data")
             stored_areas = list(entry.data.get(CONF_AREAS, []))
@@ -124,6 +150,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             stored_excluded_entities = list(entry.data.get(CONF_EXCLUDED_ENTITIES, []))
             stored_room_temperatures = dict(entry.data.get(CONF_ROOM_TEMPERATURES, {}))
             stored_room_humidities = dict(entry.data.get(CONF_ROOM_HUMIDITIES, {}))
+            stored_selection_model = dict(entry.data.get(CONF_SELECTION_MODEL, {}))
 
         # Resolve area + device picks down to a flat entity-id set,
         # unioned with any explicitly-selected entities. The runtime
@@ -144,6 +171,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN]["excluded_entities"] = stored_excluded_entities
         hass.data[DOMAIN]["room_temperatures"] = stored_room_temperatures
         hass.data[DOMAIN]["room_humidities"] = stored_room_humidities
+        hass.data[DOMAIN]["selection_model"] = stored_selection_model if stored_selection_model.get("version") == SELECTION_MODEL_VERSION else {"version": SELECTION_MODEL_VERSION, "areas": {}}
         hass.data[DOMAIN]["entry"] = entry
         
         await hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])

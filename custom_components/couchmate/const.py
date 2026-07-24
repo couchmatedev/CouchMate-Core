@@ -13,6 +13,8 @@ CONF_AREAS = "areas"
 CONF_DEVICES = "devices"
 CONF_ROOM_TEMPERATURES = "room_temperatures"
 CONF_ROOM_HUMIDITIES = "room_humidities"
+CONF_SELECTION_MODEL = "selection_model"
+SELECTION_MODEL_VERSION = 2
 CONF_FILTER_MODE = "filter_mode"
 
 FILTER_MODE_INCLUDE = "include"

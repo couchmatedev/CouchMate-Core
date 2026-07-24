@@ -11,10 +11,10 @@ async def async_load_entities(hass: HomeAssistant) -> dict[str, Any]:
     store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
     try:
         data = await store.async_load()
-        return data or {"entities": [], "areas": [], "devices": []}
+        return data or {"entities": [], "areas": [], "devices": [], "selection_model": {"version": 2, "areas": {}}}
     except Exception:
         _LOGGER.exception("Error loading CouchMate selections")
-        return {"entities": [], "areas": [], "devices": []}
+        return {"entities": [], "areas": [], "devices": [], "selection_model": {"version": 2, "areas": {}}}
 
 async def async_save_entities(hass: HomeAssistant, data: dict[str, Any]) -> None:
     store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
